@@ -1,0 +1,398 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/**
+ * Roles = permissions (keep small + stable).
+ * Departments/Designations/Subjects = admin-managed master data (dynamic).
+ */
+enum UserRole {
+  STUDENT
+  FACULTY
+  INSTITUTION_ADMIN
+}
+
+enum RequestStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+enum AttendanceMarkStatus {
+  PRESENT
+  ABSENT
+  LEAVE
+  MEDICAL
+}
+
+enum LibraryCopyStatus {
+  AVAILABLE
+  ISSUED
+  LOST
+  DAMAGED
+}
+
+enum LibraryIssueStatus {
+  ISSUED
+  RETURNED
+  OVERDUE
+  LOST
+}
+
+enum Theme {
+  SYSTEM
+  LIGHT
+  DARK
+}
+
+enum ProfileVisibility {
+  CAMPUS_ONLY
+  PUBLIC
+  PRIVATE
+}
+
+/* ============================================================
+   CORE USERS + PROFILES
+   ============================================================ */
+
+model User {
+  id           String   @id @default(cuid())
+  role         UserRole
+  email        String?  @unique
+  phone        String?  @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  student Student?
+  faculty FacultyProfile?
+}
+
+/**
+ * Student domain profile (already in your system)
+ */
+model Program {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  students Student[]
+}
+
+model Student {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  displayId String   @unique
+  fullName  String
+  programId String
+  semester  Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  program Program @relation(fields: [programId], references: [id])
+
+  enrollments     Enrollment[]
+  attendanceMarks AttendanceMark[]
+  libraryIssues   LibraryIssue[]
+  requests        Request[]
+  settings        StudentSetting?
+  feeAccount      FeeAccount?
+}
+
+/**
+ * Faculty domain profile (NEW)
+ * - Connected to User (role=FACULTY)
+ * - Admin assigns department/designation; faculty fills personal info
+ */
+model FacultyProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+
+  fullName      String?
+  employeeCode  String?
+
+  departmentId  String?
+  designationId String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department    Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  designation   Designation? @relation(fields: [designationId], references: [id], onDelete: SetNull)
+
+  offerings     CourseOffering[]
+  subjects      FacultySubject[]
+
+  @@index([departmentId])
+  @@index([designationId])
+}
+
+/* ============================================================
+   INSTITUTION MASTER DATA (ADMIN-MANAGED)
+   Department -> Designation, Subject
+   Faculty tagged to Subject(s)
+   ============================================================ */
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designations Designation[]
+  subjects     Subject[]
+  faculty      FacultyProfile[]
+}
+
+model Designation {
+  id           String   @id @default(cuid())
+  departmentId String
+  title        String
+  level        Int?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  faculty      FacultyProfile[]
+
+  @@unique([departmentId, title])
+  @@index([departmentId])
+}
+
+model Subject {
+  id           String   @id @default(cuid())
+  departmentId String
+  name         String
+  code         String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  faculty      FacultySubject[]
+
+  @@unique([departmentId, name])
+  @@index([departmentId])
+}
+
+model FacultySubject {
+  id        String   @id @default(cuid())
+  facultyId String
+  subjectId String
+  createdAt DateTime @default(now())
+
+  faculty   FacultyProfile @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  subject   Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([facultyId, subjectId])
+  @@index([facultyId])
+  @@index([subjectId])
+}
+
+/* ============================================================
+   ACADEMICS
+   ============================================================ */
+
+model Course {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  title     String
+  credits   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  offerings CourseOffering[]
+}
+
+/**
+ * CourseOffering now references FacultyProfile (login-enabled faculty)
+ */
+model CourseOffering {
+  id           String   @id @default(cuid())
+  courseId     String
+  facultyId    String
+  semester     Int
+  academicYear String?
+  term         String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  course       Course         @relation(fields: [courseId], references: [id])
+  faculty      FacultyProfile @relation(fields: [facultyId], references: [id])
+
+  enrollments  Enrollment[]
+  sessions     AttendanceSession[]
+}
+
+model Enrollment {
+  id         String   @id @default(cuid())
+  studentId  String
+  offeringId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  student    Student        @relation(fields: [studentId], references: [id])
+  offering   CourseOffering @relation(fields: [offeringId], references: [id])
+
+  @@unique([studentId, offeringId])
+}
+
+model AttendanceSession {
+  id          String   @id @default(cuid())
+  offeringId  String
+  sessionDate DateTime
+  createdAt   DateTime @default(now())
+
+  offering    CourseOffering @relation(fields: [offeringId], references: [id])
+  marks       AttendanceMark[]
+}
+
+model AttendanceMark {
+  id        String              @id @default(cuid())
+  sessionId String
+  studentId String
+  status    AttendanceMarkStatus
+  note      String?
+  createdAt DateTime @default(now())
+
+  session   AttendanceSession @relation(fields: [sessionId], references: [id])
+  student   Student           @relation(fields: [studentId], references: [id])
+
+  @@unique([sessionId, studentId])
+}
+
+/* ============================================================
+   LIBRARY
+   ============================================================ */
+
+model LibraryBook {
+  id        String   @id @default(cuid())
+  title     String
+  author    String
+  isbn      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  copies    LibraryCopy[]
+}
+
+model LibraryCopy {
+  id         String            @id @default(cuid())
+  bookId     String
+  barcode    String            @unique
+  status     LibraryCopyStatus @default(AVAILABLE)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  book       LibraryBook   @relation(fields: [bookId], references: [id])
+  issues     LibraryIssue[]
+}
+
+model LibraryIssue {
+  id         String            @id @default(cuid())
+  studentId  String
+  copyId     String
+  issueDate  DateTime
+  dueDate    DateTime
+  returnDate DateTime?
+  status     LibraryIssueStatus @default(ISSUED)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  student    Student     @relation(fields: [studentId], references: [id])
+  copy       LibraryCopy @relation(fields: [copyId], references: [id])
+}
+
+/* ============================================================
+   REQUESTS
+   ============================================================ */
+
+model Request {
+  id          String        @id @default(cuid())
+  displayId   String        @unique
+  studentId   String
+  title       String
+  description String?
+  status      RequestStatus @default(OPEN)
+  submittedAt DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  student     Student       @relation(fields: [studentId], references: [id])
+}
+
+/* ============================================================
+   STUDENT SETTINGS + FEES
+   ============================================================ */
+
+model StudentSetting {
+  id                   String            @id @default(cuid())
+  studentId            String            @unique
+  theme                Theme             @default(SYSTEM)
+  notificationsEnabled Boolean           @default(true)
+  language             String            @default("en")
+  profileVisibility    ProfileVisibility @default(CAMPUS_ONLY)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  student              Student           @relation(fields: [studentId], references: [id])
+}
+
+model FeeAccount {
+  id        String   @id @default(cuid())
+  studentId String   @unique
+  currency  String   @default("INR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student   Student     @relation(fields: [studentId], references: [id])
+  charges   FeeCharge[]
+  payments  FeePayment[]
+}
+
+model FeeCharge {
+  id           String   @id @default(cuid())
+  feeAccountId String
+  title        String
+  amount       Int
+  dueDate      DateTime?
+  status       String   @default("DUE")
+  createdAt    DateTime @default(now())
+
+  feeAccount   FeeAccount @relation(fields: [feeAccountId], references: [id])
+}
+
+model FeePayment {
+  id           String   @id @default(cuid())
+  feeAccountId String
+  amount       Int
+  paidAt       DateTime @default(now())
+  method       String?
+  reference    String?
+  createdAt    DateTime @default(now())
+
+  feeAccount   FeeAccount @relation(fields: [feeAccountId], references: [id])
+}
+
+/* ============================================================
+   COUNTERS
+   ============================================================ */
+
+model Counter {
+  key   String @id
+  value Int
+}
+
+

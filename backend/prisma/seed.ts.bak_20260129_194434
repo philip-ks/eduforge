@@ -1,0 +1,38 @@
+﻿import { prisma } from "../src/lib/prisma";
+
+async function ensureDepartment(name: string) {
+  const existing = await prisma.department.findFirst({ where: { name } });
+  if (!existing) await prisma.department.create({ data: { name } });
+}
+
+async function ensureDesignation(name: string) {
+  const existing = await prisma.designation.findFirst({ where: { name } });
+  if (!existing) await prisma.designation.create({ data: { name } });
+}
+
+async function ensureSubject(name: string) {
+  const existing = await prisma.subject.findFirst({ where: { name } });
+  if (!existing) await prisma.subject.create({ data: { name } });
+}
+
+async function main() {
+  // Minimal sensible defaults. Edit as needed.
+  const departments = ["Administration", "Computer Science", "Commerce", "English", "Mathematics", "Physics"];
+  const designations = ["Principal", "Vice Principal", "HOD", "Assistant Professor", "Lecturer", "Librarian"];
+  const subjects = ["Mathematics", "Physics", "Chemistry", "English", "Computer Science", "Accounting"];
+
+  for (const d of departments) await ensureDepartment(d);
+  for (const r of designations) await ensureDesignation(r);
+  for (const s of subjects) await ensureSubject(s);
+
+  console.log("✅ Seed complete: departments/designations/subjects ensured");
+}
+
+main()
+  .catch((e) => {
+    console.error("❌ Seed failed:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

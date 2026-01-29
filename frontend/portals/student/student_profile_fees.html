@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fees | EduForge</title>
+  <link rel="stylesheet" href="../../css/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" aria-label="EduForge logo"></div>
+    <div class="brand-text">
+      <div class="brand-name">EduForge</div>
+      <div class="brand-tagline">Student • Profile • Fees</div>
+    </div>
+  </div>
+
+  <div class="auth" style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-ghost" href="./student_profile.html">Profile</a>
+    <a class="btn btn-ghost" href="./dashboard_student.html">Dashboard</a>
+    <button id="logoutBtn" class="btn btn-primary" type="button">Logout</button>
+  </div>
+</header>
+
+<main class="app">
+  <aside class="sidebar">
+    <nav class="sidebar-nav" style="margin-top:6px;">
+      <a class="side-link" href="./student_home.html">Home</a>
+      <a class="side-link" href="./student_courses.html">My Courses</a>
+      <a class="side-link" href="./student_attendance.html">Attendance</a>
+      <a class="side-link" href="./student_library.html">Library</a>
+      <a class="side-link" href="./student_requests.html">Requests</a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a class="side-mini active" href="./student_profile.html">Profile</a>
+    </div>
+  </aside>
+
+  <section class="mainpanel">
+    <div id="statusNote" class="note" style="margin-bottom:12px;">Loading fees…</div>
+
+    <div class="note">
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+        <h2 style="margin:0;">Fees Summary</h2>
+        <a class="btn btn-ghost" href="./student_profile.html">Back to Profile</a>
+      </div>
+
+      <div class="note" style="margin-top:12px;">
+        <strong>Summary</strong>
+        <ul id="feesList" style="margin:8px 0 0 18px;"><li>Loading…</li></ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../assets/eduforge_config.js"></script>
+<script src="../../assets/eduforge_auth.js"></script>
+
+<script>
+  (function () {
+    const statusNote = document.getElementById("statusNote");
+    const feesList = document.getElementById("feesList");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    function setStatus(msg, isErr) {
+      statusNote.textContent = msg;
+      statusNote.style.borderColor = isErr ? "rgba(255,0,0,0.35)" : "";
+    }
+    function clearList() { feesList.innerHTML = ""; }
+    function addLi(text) {
+      const li = document.createElement("li");
+      li.textContent = text;
+      feesList.appendChild(li);
+    }
+
+    function money(cur, amount) {
+      if (typeof amount !== "number") return "-";
+      return `${cur} ${amount}`;
+    }
+
+    logoutBtn.addEventListener("click", function () {
+      EduForge.logout("../../auth/login.html");
+    });
+
+    async function loadFees() {
+      try {
+        EduForge.requireTokenOrRedirect("../../auth/login.html");
+        setStatus("Loading fees…", false);
+
+        const data = await EduForge.apiGet("/api/student/fees/summary", {
+          requireAuth: true,
+          loginRedirect: "../../auth/login.html"
+        });
+        if (!data) return;
+
+        clearList();
+        const cur = data.currency || "INR";
+
+        addLi("Currency: " + cur);
+        addLi("Total Payable: " + money(cur, data.totalPayable));
+        addLi("Total Paid: " + money(cur, data.totalPaid));
+        addLi("Due: " + money(cur, data.due));
+        addLi("Status: " + (data.status || "-"));
+
+        setStatus("Fees loaded.", false);
+      } catch (e) {
+        console.error(e);
+        setStatus("Failed to load fees. Check backend + token.", true);
+        clearList();
+        addLi("Error loading fees.");
+      }
+    }
+
+    loadFees();
+  })();
+</script>
+
+</body>
+</html>

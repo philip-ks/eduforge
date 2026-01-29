@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Institution Dashboard | EduForge</title>
+  <link rel="stylesheet" href="../../css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-label="EduForge logo"></div>
+      <div class="brand-text">
+        <div class="brand-name">EduForge</div>
+        <div class="brand-tagline">Institution Dashboard (placeholder)</div>
+      </div>
+    </div>
+
+    <div class="auth">
+      <a class="btn btn-ghost" href="../index.html">Public Website</a>
+      <a class="btn btn-primary" href="./login.html">Logout (placeholder)</a>
+    </div>
+  </header>
+
+  <main class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <p class="sidebar-title">Institution Navigation</p>
+        <p class="sidebar-subtitle">This layout is for institutional users (Registrar/VC/Admin etc.).</p>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="side-link" href="#" onclick="alert('Management module later.'); return false;">Management</a>
+        <a class="side-link" href="#" onclick="alert('Academics module later.'); return false;">Academics</a>
+        <a class="side-link" href="#" onclick="alert('HR module later.'); return false;">HR</a>
+        <a class="side-link" href="#" onclick="alert('Finance module later.'); return false;">Finance</a>
+        <a class="side-link" href="#" onclick="alert('Facilities module later.'); return false;">Facilities</a>
+        <a class="side-link" href="#" onclick="alert('Research module later.'); return false;">Research</a>
+        <a class="side-link" href="#" onclick="alert('Startups module later.'); return false;">Startups</a>
+      </nav>
+
+      <!-- Bottom-left buttons -->
+      <div class="sidebar-bottom">
+        <a class="side-mini" href="#" onclick="alert('Profile page later.'); return false;">Profile</a>
+        <a class="side-mini" href="#" onclick="alert('Settings page later.'); return false;">Settings</a>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <section class="mainpanel">
+      <h1 class="panel-title">Welcome (Institution User)</h1>
+      <p class="panel-text">
+        This is the post-login landing page for institutional accounts. Later, this will show dashboards based on role
+        (Chancellor/VC/Registrar/Finance/Dean/etc.) and institution scope.
+      </p>
+
+      <div style="margin-top:14px;" class="note">
+        Next build: make each sidebar button open a new page (even blank) under pages/ so navigation becomes real.
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduForge</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-label="EduForge logo"></div>
+      <div class="brand-text">
+        <div class="brand-name">EduForge</div>
+        <div class="brand-tagline">Open portal framework for education</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a class="nav-link" href="./pages/about.html">About</a>
+      <a class="nav-link" href="./pages/opensource.html">Open Source</a>
+      <a class="nav-link" href="./pages/docs.html">Docs</a>
+      <a class="nav-link" href="./pages/contact.html">Contact</a>
+    </nav>
+
+    <div class="auth">
+      <a class="btn btn-ghost" href="../auth/signup.html">Sign up</a>
+      <a class="btn btn-primary" href="../auth/login.html">Login</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1 class="hero-title">EduForge</h1>
+      <p class="hero-subtitle">
+        A modular, open-source university and education management portal (front-end first).
+        Student, institutional, and alumni experiences will be developed as separate portals.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="../auth/login.html">Go to Login</a>
+        <a class="btn btn-ghost" href="./pages/docs.html">Read Docs</a>
+      </div>
+    </section>
+
+    <section class="grid" aria-label="Quick sections">
+      <div class="card">
+        <div class="card-title">About</div>
+        <div class="card-text">What EduForge is and what problem it solves.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Open Source</div>
+        <div class="card-text">Contribution model, licensing, and community roadmap.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Docs</div>
+        <div class="card-text">Implementation notes, folder structure, and page index.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Contact</div>
+        <div class="card-text">How institutions can collaborate or adopt EduForge.</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    © <span id="year"></span> EduForge. All rights reserved (placeholder).
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

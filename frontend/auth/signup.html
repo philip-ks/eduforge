@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign up | EduForge</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-label="EduForge logo"></div>
+      <div class="brand-text">
+        <div class="brand-name">EduForge</div>
+        <div class="brand-tagline">Sign up</div>
+      </div>
+    </div>
+
+    <div class="auth">
+      <a class="btn btn-ghost" href="../website/index.html">Home</a>
+      <a class="btn btn-ghost" href="./login.html">Login</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero" style="max-width:720px; margin: 0 auto;">
+      <h1 class="hero-title" style="font-size:22px;">Create an account</h1>
+      <p class="hero-subtitle">
+        Student sign-up is active (placeholder). Institutional onboarding will be added later.
+      </p>
+
+      <div class="tabs" role="tablist" aria-label="Signup type">
+        <button class="tab-btn active" id="tab-student" type="button">Student</button>
+        <button class="tab-btn" id="tab-institutional" type="button">Institutional</button>
+      </div>
+
+      <div class="tab-panel active" id="panel-student" role="tabpanel" aria-labelledby="tab-student">
+        <form class="form">
+          <label class="label">Full name</label>
+          <input class="input" type="text" placeholder="Student Name" />
+
+          <label class="label">Email</label>
+          <input class="input" type="email" placeholder="student@example.com" />
+
+          <label class="label">Password</label>
+          <input class="input" type="password" placeholder="Create a password" />
+
+          <label class="label">Confirm password</label>
+          <input class="input" type="password" placeholder="Confirm password" />
+
+          <a class="btn btn-primary" href="../portals/student/student_home.html" style="margin-top:12px;">
+            Create Student Account (placeholder)
+          </a>
+        </form>
+
+        <div class="note">
+          Later: student verification, institution mapping, and role restrictions will be applied.
+        </div>
+      </div>
+
+      <div class="tab-panel" id="panel-institutional" role="tabpanel" aria-labelledby="tab-institutional">
+        <div class="note">
+          Institutional onboarding will be added later (university/college/school setup, admin role assignment).
+        </div>
+        <a class="btn btn-primary" href="#" onclick="alert('Institutional signup later.'); return false;">
+          Institutional Signup (placeholder)
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const tabStudent = document.getElementById("tab-student");
+    const tabInstitutional = document.getElementById("tab-institutional");
+    const panelStudent = document.getElementById("panel-student");
+    const panelInstitutional = document.getElementById("panel-institutional");
+
+    tabStudent.addEventListener("click", () => {
+      tabStudent.classList.add("active");
+      tabInstitutional.classList.remove("active");
+      panelStudent.classList.add("active");
+      panelInstitutional.classList.remove("active");
+    });
+
+    tabInstitutional.addEventListener("click", () => {
+      tabInstitutional.classList.add("active");
+      tabStudent.classList.remove("active");
+      panelInstitutional.classList.add("active");
+      panelStudent.classList.remove("active");
+    });
+  </script>
+</body>
+</html>

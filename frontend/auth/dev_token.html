@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DEV Token Tester | EduForge</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" aria-label="EduForge logo"></div>
+    <div class="brand-text">
+      <div class="brand-name">EduForge</div>
+      <div class="brand-tagline">DEV • Token Tester</div>
+    </div>
+  </div>
+  <div class="auth" style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-ghost" href="./login.html">Back to Login</a>
+    <a class="btn btn-ghost" href="../portals/student/student_home.html">Open Student Home</a>
+  </div>
+</header>
+
+<main class="app">
+  <aside class="sidebar">
+    <nav class="sidebar-nav" style="margin-top:6px;">
+      <a class="side-link active" href="./dev_token.html">DEV Token</a>
+      <a class="side-link" href="./login.html">Login</a>
+      <a class="side-link" href="./signup.html">Signup</a>
+    </nav>
+  </aside>
+
+  <section class="mainpanel">
+    <div id="statusNote" class="note" style="margin-bottom:12px;">
+      Use this DEV page to get/store a token and test backend calls.
+    </div>
+
+    <div class="note">
+      <h2 style="margin:0;">Config</h2>
+      <p style="margin:10px 0 0; color: var(--muted); font-size:13px; line-height:1.5;">
+        API base defaults to <code>http://localhost:4000</code>. You can override it here.
+      </p>
+
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <input id="apiBase" type="text" placeholder="http://localhost:4000"
+          style="min-width:320px; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.18); color: inherit;" />
+        <button id="saveApiBaseBtn" class="btn btn-primary" type="button">Save API Base</button>
+        <button id="resetApiBaseBtn" class="btn btn-ghost" type="button">Reset</button>
+      </div>
+
+      <div style="margin-top:10px; color: var(--muted); font-size:13px;">
+        Current API Base: <code id="currentApiBase">-</code>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:14px;">
+      <h2 style="margin:0;">Get Token (via /api/auth/login)</h2>
+
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <input id="email" type="email" value="student@example.com" placeholder="student@example.com"
+          style="min-width:260px; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.18); color: inherit;" />
+        <input id="password" type="password" value="password123" placeholder="password"
+          style="min-width:220px; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.18); color: inherit;" />
+        <button id="loginBtn" class="btn btn-primary" type="button">Get Token</button>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color: var(--muted);">Token (stored in localStorage)</span>
+          <textarea id="tokenBox" rows="4" placeholder="Paste token here or click Get Token"
+            style="width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.18); color: inherit; resize: vertical;"></textarea>
+        </label>
+
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="saveTokenBtn" class="btn btn-primary" type="button">Save Token</button>
+          <button id="clearTokenBtn" class="btn btn-ghost" type="button">Clear Token</button>
+        </div>
+
+        <div style="margin-top:10px; color: var(--muted); font-size:13px;">
+          Token status: <code id="tokenStatus">-</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:14px;">
+      <h2 style="margin:0;">Test Endpoints</h2>
+
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-ghost" type="button" data-path="/api/student/home">GET /student/home</button>
+        <button class="btn btn-ghost" type="button" data-path="/api/student/profile">GET /student/profile</button>
+        <button class="btn btn-ghost" type="button" data-path="/api/student/settings">GET /student/settings</button>
+        <button class="btn btn-ghost" type="button" data-path="/api/student/fees/summary">GET /student/fees/summary</button>
+      </div>
+
+      <div class="note" style="margin-top:12px;">
+        <strong>Response</strong>
+        <pre id="output" style="margin-top:8px; white-space:pre-wrap; word-break:break-word;">(nothing yet)</pre>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<script src="../assets/eduforge_config.js"></script>
+<script src="../assets/eduforge_auth.js"></script>
+
+<script>
+  (function () {
+    const statusNote = document.getElementById("statusNote");
+    const currentApiBase = document.getElementById("currentApiBase");
+
+    const apiBaseInput = document.getElementById("apiBase");
+    const saveApiBaseBtn = document.getElementById("saveApiBaseBtn");
+    const resetApiBaseBtn = document.getElementById("resetApiBaseBtn");
+
+    const emailEl = document.getElementById("email");
+    const passwordEl = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+
+    const tokenBox = document.getElementById("tokenBox");
+    const saveTokenBtn = document.getElementById("saveTokenBtn");
+    const clearTokenBtn = document.getElementById("clearTokenBtn");
+    const tokenStatus = document.getElementById("tokenStatus");
+
+    const output = document.getElementById("output");
+
+    function setStatus(msg, isErr) {
+      statusNote.textContent = msg;
+      statusNote.style.borderColor = isErr ? "rgba(255,0,0,0.35)" : "";
+    }
+
+    function refreshConfigUI() {
+      currentApiBase.textContent = EduForge.getApiBase();
+      apiBaseInput.value = EduForge.getApiBase();
+      const tok = EduForge.getToken();
+      tokenStatus.textContent = tok ? ("saved (" + Math.min(tok.length, 20) + " chars…)") : "missing";
+      if (tok && !tokenBox.value.trim()) tokenBox.value = tok;
+    }
+
+    saveApiBaseBtn.addEventListener("click", function () {
+      const v = apiBaseInput.value.trim();
+      if (!v) return setStatus("API Base cannot be empty.", true);
+      EduForge.setApiBase(v);
+      setStatus("Saved API Base. (Reload other pages if open.)", false);
+      refreshConfigUI();
+    });
+
+    resetApiBaseBtn.addEventListener("click", function () {
+      try { localStorage.removeItem(EduForge.config.API_BASE_KEY); } catch {}
+      EduForge.setApiBase(EduForge.config.DEFAULT_API_BASE);
+      setStatus("Reset API Base to default.", false);
+      refreshConfigUI();
+    });
+
+    saveTokenBtn.addEventListener("click", function () {
+      const t = tokenBox.value.trim();
+      if (!t) return setStatus("Token cannot be empty.", true);
+      EduForge.setToken(t);
+      setStatus("Token saved to localStorage.", false);
+      refreshConfigUI();
+    });
+
+    clearTokenBtn.addEventListener("click", function () {
+      EduForge.clearToken();
+      tokenBox.value = "";
+      setStatus("Token cleared.", false);
+      refreshConfigUI();
+    });
+
+    loginBtn.addEventListener("click", async function () {
+      const email = emailEl.value.trim();
+      const password = passwordEl.value;
+
+      if (!email || !password) return setStatus("Email and password are required.", true);
+
+      setStatus("Requesting token from /api/auth/login…", false);
+      output.textContent = "(waiting…)";
+
+      try {
+        const data = await EduForge.apiPost("/api/auth/login", { email, password }, { requireAuth: false });
+        if (!data || !data.token) throw new Error("No token returned");
+        tokenBox.value = data.token;
+        EduForge.setToken(data.token);
+        setStatus("Token received and saved. Now test endpoints below.", false);
+        output.textContent = JSON.stringify(data, null, 2);
+        refreshConfigUI();
+      } catch (e) {
+        console.error(e);
+        setStatus("Failed to login for token. Check backend + credentials.", true);
+        output.textContent = String(e && e.message ? e.message : e);
+      }
+    });
+
+    document.querySelectorAll("button[data-path]").forEach(btn => {
+      btn.addEventListener("click", async function () {
+        const path = btn.getAttribute("data-path");
+        output.textContent = "(waiting…)";
+        setStatus("Calling " + path + " …", false);
+
+        try {
+          const data = await EduForge.apiGet(path, { requireAuth: true });
+          output.textContent = JSON.stringify(data, null, 2);
+          setStatus("OK: " + path, false);
+        } catch (e) {
+          console.error(e);
+          output.textContent = String(e && e.message ? e.message : e);
+          setStatus("Failed: " + path + " (check token / backend)", true);
+        }
+      });
+    });
+
+    refreshConfigUI();
+  })();
+</script>
+
+</body>
+</html>

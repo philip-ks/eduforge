@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Request | EduForge</title>
+  <link rel="stylesheet" href="../../css/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" aria-label="EduForge logo"></div>
+    <div class="brand-text">
+      <div class="brand-name">EduForge</div>
+      <div class="brand-tagline">Student • Requests • New</div>
+    </div>
+  </div>
+
+  <div class="auth" style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-ghost" href="./student_requests.html">Back to Requests</a>
+    <button id="logoutBtn" class="btn btn-primary" type="button">Logout</button>
+  </div>
+</header>
+
+<main class="app">
+  <aside class="sidebar">
+    <nav class="sidebar-nav" style="margin-top:6px;">
+      <a class="side-link" href="./student_home.html">Home</a>
+      <a class="side-link" href="./student_courses.html">My Courses</a>
+      <a class="side-link" href="./student_attendance.html">Attendance</a>
+      <a class="side-link" href="./student_library.html">Library</a>
+      <a class="side-link active" href="./student_requests.html">Requests</a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a class="side-mini" href="./student_profile.html">Profile</a>
+    </div>
+  </aside>
+
+  <section class="mainpanel">
+    <div id="statusNote" class="note" style="margin-bottom:12px;">Create a new request.</div>
+
+    <div class="note">
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+        <h2 style="margin:0;">New Request</h2>
+        <a class="btn btn-ghost" href="./student_requests.html">Cancel</a>
+      </div>
+
+      <form id="reqForm" style="margin-top:12px;">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <label style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:13px; color: var(--muted);">Title</span>
+            <input id="title" type="text" required minlength="2" maxlength="120"
+              placeholder="e.g., Bonafide Certificate"
+              style="padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.18); color: inherit;" />
+          </label>
+
+          <label style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:13px; color: var(--muted);">Description (optional)</span>
+            <textarea id="description" rows="5" maxlength="2000"
+              placeholder="Add details (reason, urgency, supporting info)..."
+              style="padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.18); color: inherit; resize: vertical;"></textarea>
+          </label>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
+            <button id="submitBtn" class="btn btn-primary" type="submit">Submit Request</button>
+            <a class="btn btn-ghost" href="./student_requests.html">Back</a>
+          </div>
+        </div>
+      </form>
+
+      <div id="resultBox" class="note" style="margin-top:14px; display:none;">
+        <strong>Created</strong>
+        <div id="createdText" style="margin-top:6px;"></div>
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <a class="btn btn-primary" href="./student_requests.html">Go to Requests</a>
+          <button id="newAnotherBtn" class="btn btn-ghost" type="button">Create Another</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../assets/eduforge_config.js"></script>
+<script src="../../assets/eduforge_auth.js"></script>
+
+<script>
+  (function () {
+    const statusNote = document.getElementById("statusNote");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const form = document.getElementById("reqForm");
+    const titleEl = document.getElementById("title");
+    const descEl = document.getElementById("description");
+    const submitBtn = document.getElementById("submitBtn");
+
+    const resultBox = document.getElementById("resultBox");
+    const createdText = document.getElementById("createdText");
+    const newAnotherBtn = document.getElementById("newAnotherBtn");
+
+    function setStatus(msg, isErr) {
+      statusNote.textContent = msg;
+      statusNote.style.borderColor = isErr ? "rgba(255,0,0,0.35)" : "";
+    }
+    function setLoading(isLoading) {
+      submitBtn.disabled = isLoading;
+      submitBtn.textContent = isLoading ? "Submitting..." : "Submit Request";
+    }
+
+    logoutBtn.addEventListener("click", function () {
+      EduForge.logout("../../auth/login.html");
+    });
+
+    newAnotherBtn.addEventListener("click", function () {
+      resultBox.style.display = "none";
+      form.style.display = "";
+      titleEl.value = "";
+      descEl.value = "";
+      titleEl.focus();
+      setStatus("Create a new request.", false);
+    });
+
+    EduForge.requireTokenOrRedirect("../../auth/login.html");
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const title = (titleEl.value || "").trim();
+      const description = (descEl.value || "").trim();
+
+      if (title.length < 2) {
+        setStatus("Title must be at least 2 characters.", true);
+        return;
+      }
+
+      setLoading(true);
+      setStatus("Submitting request…", false);
+
+      try {
+        const payload = { title, ...(description ? { description } : {}) };
+
+        const created = await EduForge.apiPost("/api/student/requests", payload, {
+          requireAuth: true,
+          loginRedirect: "../../auth/login.html"
+        });
+        if (!created) return;
+
+        form.style.display = "none";
+        resultBox.style.display = "";
+        createdText.textContent = `${created.displayId} • Status: ${created.status}`;
+        setStatus("Request created successfully.", false);
+      } catch (err) {
+        console.error(err);
+        setStatus("Failed to create request. Check backend + token.", true);
+      } finally {
+        setLoading(false);
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>

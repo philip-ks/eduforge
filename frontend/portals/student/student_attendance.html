@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attendance | EduForge</title>
+  <link rel="stylesheet" href="../../css/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" aria-label="EduForge logo"></div>
+    <div class="brand-text">
+      <div class="brand-name">EduForge</div>
+      <div class="brand-tagline">Student • Attendance</div>
+    </div>
+  </div>
+
+  <div class="auth" style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-ghost" href="./dashboard_student.html">Dashboard</a>
+    <button id="logoutBtn" class="btn btn-primary" type="button">Logout</button>
+  </div>
+</header>
+
+<main class="app">
+  <aside class="sidebar">
+    <nav class="sidebar-nav" style="margin-top:6px;">
+      <a class="side-link" href="./student_home.html">Home</a>
+      <a class="side-link" href="./student_courses.html">My Courses</a>
+      <a class="side-link active" href="./student_attendance.html">Attendance</a>
+      <a class="side-link" href="./student_library.html">Library</a>
+      <a class="side-link" href="./student_requests.html">Requests</a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a class="side-mini" href="./student_profile.html">Profile</a>
+    </div>
+  </aside>
+
+  <section class="mainpanel">
+    <div id="statusNote" class="note" style="margin-bottom:12px;">Loading attendance…</div>
+
+    <div class="note">
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+        <h2 style="margin:0;">Attendance</h2>
+        <a class="btn btn-ghost" href="./student_home.html">Back to Home</a>
+      </div>
+
+      <div class="note" style="margin-top:12px;">
+        <strong>Course-wise Summary</strong>
+        <ul id="attendanceList" style="margin:8px 0 0 18px;"><li>Loading…</li></ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../assets/eduforge_config.js"></script>
+<script src="../../assets/eduforge_auth.js"></script>
+
+<script>
+  (function () {
+    const statusNote = document.getElementById("statusNote");
+    const attendanceList = document.getElementById("attendanceList");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    function setStatus(msg, isErr) {
+      statusNote.textContent = msg;
+      statusNote.style.borderColor = isErr ? "rgba(255,0,0,0.35)" : "";
+    }
+    function clearList() { attendanceList.innerHTML = ""; }
+    function addLi(text) {
+      const li = document.createElement("li");
+      li.textContent = text;
+      attendanceList.appendChild(li);
+    }
+    function statusLabel(s) {
+      if (!s) return "-";
+      if (s === "ELIGIBLE") return "Eligible";
+      if (s === "WARNING") return "Warning";
+      return s;
+    }
+
+    logoutBtn.addEventListener("click", function () {
+      EduForge.logout("../../auth/login.html");
+    });
+
+    async function loadAttendance() {
+      try {
+        EduForge.requireTokenOrRedirect("../../auth/login.html");
+        setStatus("Loading attendance…", false);
+
+        const data = await EduForge.apiGet("/api/student/attendance", {
+          requireAuth: true,
+          loginRedirect: "../../auth/login.html"
+        });
+        if (!data) return;
+
+        const items = Array.isArray(data.items) ? data.items : [];
+        clearList();
+
+        if (items.length === 0) {
+          addLi("No attendance data found.");
+          setStatus("No attendance found.", false);
+          return;
+        }
+
+        items.forEach(a => {
+          const code = a.code || "CODE";
+          const title = a.title || "Course";
+          const present = (typeof a.present === "number") ? a.present : "-";
+          const total = (typeof a.total === "number") ? a.total : "-";
+          const percent = (typeof a.percent === "number") ? a.percent : "-";
+          const status = statusLabel(a.status);
+          addLi(`${code} • ${title} — Present: ${present} / ${total} • ${percent}% • Status: ${status}`);
+        });
+
+        setStatus("Attendance loaded.", false);
+      } catch (e) {
+        console.error(e);
+        setStatus("Failed to load attendance. Check backend + token.", true);
+        clearList();
+        addLi("Error loading attendance.");
+      }
+    }
+
+    loadAttendance();
+  })();
+</script>
+
+</body>
+</html>

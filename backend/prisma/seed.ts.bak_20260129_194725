@@ -1,0 +1,72 @@
+﻿import { prisma } from "../src/lib/prisma";
+
+async function ensureDepartment(name: string) {
+  // Department likely has unique "name"
+  const existing = await prisma.department.findFirst({ where: { name } as any });
+  if (existing) return existing;
+
+  return prisma.department.create({ data: { name } as any });
+}
+
+async function ensureDesignation(title: string, departmentId: string) {
+  // Try to find existing designation for the same dept+title
+  const existing = await prisma.designation.findFirst({
+    where: {
+      title,
+      departmentId,
+    },
+  });
+  if (existing) return existing;
+
+  return prisma.designation.create({
+    data: {
+      title,
+      department: { connect: { id: departmentId } },
+    },
+  });
+}
+
+async function ensureSubject(name: string) {
+  const existing = await prisma.subject.findFirst({ where: { name } as any });
+  if (existing) return existing;
+
+  return prisma.subject.create({ data: { name } as any });
+}
+
+async function main() {
+  // Departments
+  const departments = ["Administration", "Computer Science", "Commerce", "English", "Mathematics", "Physics"];
+  const ensuredDepts: Record<string, { id: string; name?: string }> = {};
+
+  for (const d of departments) {
+    const dept = await ensureDepartment(d);
+    ensuredDepts[d] = dept as any;
+  }
+
+  // Use Administration as default department for designations (required relation)
+  const adminDept = ensuredDepts["Administration"];
+  if (!adminDept?.id) {
+    throw new Error("Failed to ensure Administration department (missing id). Check Department model primary key.");
+  }
+
+  // Designations (attached to Administration)
+  const designations = ["Principal", "Vice Principal", "HOD", "Assistant Professor", "Lecturer", "Librarian"];
+  for (const t of designations) {
+    await ensureDesignation(t, adminDept.id);
+  }
+
+  // Subjects
+  const subjects = ["Mathematics", "Physics", "Chemistry", "English", "Computer Science", "Accounting"];
+  for (const s of subjects) await ensureSubject(s);
+
+  console.log("✅ Seed complete: departments/designations/subjects ensured");
+}
+
+main()
+  .catch((e) => {
+    console.error("❌ Seed failed:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

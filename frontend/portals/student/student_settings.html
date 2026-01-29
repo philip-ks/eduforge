@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings | EduForge</title>
+  <link rel="stylesheet" href="../../css/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" aria-label="EduForge logo"></div>
+    <div class="brand-text">
+      <div class="brand-name">EduForge</div>
+      <div class="brand-tagline">Student • Settings</div>
+    </div>
+  </div>
+
+  <div class="auth" style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-ghost" href="./dashboard_student.html">Dashboard</a>
+    <button id="logoutBtn" class="btn btn-primary" type="button">Logout</button>
+  </div>
+</header>
+
+<main class="app">
+  <aside class="sidebar">
+    <nav class="sidebar-nav" style="margin-top:6px;">
+      <a class="side-link" href="./student_home.html">Home</a>
+      <a class="side-link" href="./student_courses.html">My Courses</a>
+      <a class="side-link" href="./student_attendance.html">Attendance</a>
+      <a class="side-link" href="./student_library.html">Library</a>
+      <a class="side-link" href="./student_requests.html">Requests</a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a class="side-mini" href="./student_profile.html">Profile</a>
+    </div>
+  </aside>
+
+  <section class="mainpanel">
+    <div class="note">
+      Settings is managed under <strong>Profile</strong>.
+      <div style="margin-top:12px;">
+        <a class="btn btn-primary" href="./student_profile.html#settings">Go to Profile Settings</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../assets/eduforge_config.js"></script>
+<script src="../../assets/eduforge_auth.js"></script>
+<script>
+  (function () {
+    document.getElementById("logoutBtn").addEventListener("click", function () {
+      EduForge.logout("../../auth/login.html");
+    });
+    EduForge.requireTokenOrRedirect("../../auth/login.html");
+  })();
+</script>
+
+</body>
+</html>

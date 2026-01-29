@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile | EduForge</title>
+  <link rel="stylesheet" href="../../css/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" aria-label="EduForge logo"></div>
+    <div class="brand-text">
+      <div class="brand-name">EduForge</div>
+      <div class="brand-tagline">Student • Profile</div>
+    </div>
+  </div>
+
+  <div class="auth" style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-ghost" href="./dashboard_student.html">Dashboard</a>
+    <button id="logoutBtn" class="btn btn-primary" type="button">Logout</button>
+  </div>
+</header>
+
+<main class="app">
+  <aside class="sidebar">
+    <nav class="sidebar-nav" style="margin-top:6px;">
+      <a class="side-link" href="./student_home.html">Home</a>
+      <a class="side-link" href="./student_courses.html">My Courses</a>
+      <a class="side-link" href="./student_attendance.html">Attendance</a>
+      <a class="side-link" href="./student_library.html">Library</a>
+      <a class="side-link" href="./student_requests.html">Requests</a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a class="side-mini active" href="./student_profile.html">Profile</a>
+    </div>
+  </aside>
+
+  <section class="mainpanel">
+    <div id="statusNote" class="note" style="margin-bottom:12px;">Loading profile…</div>
+
+    <div class="note">
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+        <h2 style="margin:0;">Student Profile</h2>
+        <a class="btn btn-ghost" href="./student_home.html">Back to Home</a>
+      </div>
+
+      <div class="note" style="margin-top:12px;">
+        <strong>Identity</strong>
+        <ul id="identityList" style="margin:8px 0 0 18px;"><li>Loading…</li></ul>
+      </div>
+
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn btn-primary" href="./student_profile_fees.html">Fees (under Profile)</a>
+        <a class="btn btn-ghost" href="#settings">Open Settings</a>
+      </div>
+    </div>
+
+    <div id="settings" class="note" style="margin-top:14px;">
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+        <h2 style="margin:0;">Settings</h2>
+      </div>
+
+      <p style="margin:10px 0 0; color: var(--muted); font-size:13px; line-height:1.5;">
+        These settings are loaded from backend and can be updated.
+      </p>
+
+      <form id="settingsForm" style="margin-top:12px;">
+        <div style="display:flex; flex-direction:column; gap:10px; max-width:520px;">
+
+          <label style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:13px; color: var(--muted);">Theme</span>
+            <select id="theme"
+              style="padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.18); color: inherit;">
+              <option value="SYSTEM">SYSTEM</option>
+              <option value="LIGHT">LIGHT</option>
+              <option value="DARK">DARK</option>
+            </select>
+          </label>
+
+          <label style="display:flex; gap:10px; align-items:center;">
+            <input id="notifications" type="checkbox" />
+            <span style="font-size:13px; color: var(--muted);">Enable notifications</span>
+          </label>
+
+          <label style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:13px; color: var(--muted);">Language</span>
+            <input id="language" type="text" minlength="2" maxlength="10" placeholder="en"
+              style="padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.18); color: inherit;" />
+          </label>
+
+          <label style="display:flex; flex-direction:column; gap:6px;">
+            <span style="font-size:13px; color: var(--muted);">Profile Visibility</span>
+            <select id="profileVisibility"
+              style="padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.18); color: inherit;">
+              <option value="CAMPUS_ONLY">CAMPUS_ONLY</option>
+              <option value="PUBLIC">PUBLIC</option>
+              <option value="PRIVATE">PRIVATE</option>
+            </select>
+          </label>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
+            <button id="saveBtn" class="btn btn-primary" type="submit">Save Settings</button>
+            <button id="reloadBtn" class="btn btn-ghost" type="button">Reload</button>
+          </div>
+
+          <div id="settingsMsg" style="margin-top:6px; color: var(--muted); font-size:13px;"></div>
+        </div>
+      </form>
+    </div>
+
+  </section>
+</main>
+
+<script src="../../assets/eduforge_config.js"></script>
+<script src="../../assets/eduforge_auth.js"></script>
+
+<script>
+  (function () {
+    const statusNote = document.getElementById("statusNote");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const identityList = document.getElementById("identityList");
+
+    const settingsForm = document.getElementById("settingsForm");
+    const themeEl = document.getElementById("theme");
+    const notificationsEl = document.getElementById("notifications");
+    const languageEl = document.getElementById("language");
+    const visibilityEl = document.getElementById("profileVisibility");
+    const saveBtn = document.getElementById("saveBtn");
+    const reloadBtn = document.getElementById("reloadBtn");
+    const settingsMsg = document.getElementById("settingsMsg");
+
+    function setStatus(msg, isErr) {
+      statusNote.textContent = msg;
+      statusNote.style.borderColor = isErr ? "rgba(255,0,0,0.35)" : "";
+    }
+    function clearIdentity() { identityList.innerHTML = ""; }
+    function addIdentity(text) {
+      const li = document.createElement("li");
+      li.textContent = text;
+      identityList.appendChild(li);
+    }
+
+    function setSettingsMessage(msg, isErr) {
+      settingsMsg.textContent = msg || "";
+      settingsMsg.style.color = isErr ? "rgba(255,120,120,0.95)" : "var(--muted)";
+    }
+
+    function setSaving(isSaving) {
+      saveBtn.disabled = isSaving;
+      saveBtn.textContent = isSaving ? "Saving..." : "Save Settings";
+    }
+
+    logoutBtn.addEventListener("click", function () {
+      EduForge.logout("../../auth/login.html");
+    });
+
+    async function loadProfile() {
+      EduForge.requireTokenOrRedirect("../../auth/login.html");
+      setStatus("Loading profile…", false);
+
+      clearIdentity();
+      addIdentity("Loading…");
+
+      try {
+        const profile = await EduForge.apiGet("/api/student/profile", {
+          requireAuth: true,
+          loginRedirect: "../../auth/login.html"
+        });
+
+        clearIdentity();
+        addIdentity("Name: " + (profile.name || "-"));
+        addIdentity("Student ID: " + (profile.displayId || "-"));
+        addIdentity("Program: " + (profile.program && profile.program.name ? profile.program.name : "-"));
+        addIdentity("Semester: " + (typeof profile.semester === "number" ? profile.semester : "-"));
+        addIdentity("Email: " + (profile.email || "-"));
+        addIdentity("Phone: " + (profile.phone || "-"));
+
+        setStatus("Profile loaded.", false);
+      } catch (e) {
+        console.error(e);
+        clearIdentity();
+        addIdentity("Error loading profile.");
+        setStatus("Failed to load profile.", true);
+      }
+    }
+
+    async function loadSettings() {
+      try {
+        setSettingsMessage("Loading settings…", false);
+        const s = await EduForge.apiGet("/api/student/settings", {
+          requireAuth: true,
+          loginRedirect: "../../auth/login.html"
+        });
+
+        themeEl.value = s.theme || "SYSTEM";
+        notificationsEl.checked = !!s.notifications;
+        languageEl.value = s.language || "en";
+        visibilityEl.value = s.profileVisibility || "CAMPUS_ONLY";
+
+        setSettingsMessage("Settings loaded.", false);
+      } catch (e) {
+        console.error(e);
+        setSettingsMessage("Failed to load settings.", true);
+      }
+    }
+
+    settingsForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      try {
+        setSaving(true);
+        setSettingsMessage("Saving…", false);
+
+        const payload = {
+          theme: themeEl.value,
+          notifications: !!notificationsEl.checked,
+          language: (languageEl.value || "").trim() || "en",
+          profileVisibility: visibilityEl.value
+        };
+
+        await EduForge.apiPatch("/api/student/settings", payload, {
+          requireAuth: true,
+          loginRedirect: "../../auth/login.html"
+        });
+
+        setSettingsMessage("Saved successfully.", false);
+      } catch (e) {
+        console.error(e);
+        setSettingsMessage("Save failed. Check backend/token.", true);
+      } finally {
+        setSaving(false);
+      }
+    });
+
+    reloadBtn.addEventListener("click", function () {
+      loadSettings();
+    });
+
+    (async function init() {
+      await loadProfile();
+      await loadSettings();
+    })();
+  })();
+</script>
+
+</body>
+</html>

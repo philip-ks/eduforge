@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | EduForge</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .errorBox {
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,0,0,0.35);
+      background: rgba(255,0,0,0.10);
+      color: #fff;
+      display: none;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <main class="authContainer">
+    <h1>EduForge Login</h1>
+
+    <div id="errorBox" class="errorBox"></div>
+
+    <label>Email</label>
+    <input id="email" type="email" placeholder="institution@gcu.edu.in" />
+
+    <label>Password</label>
+    <input id="password" type="password" />
+
+    <button id="loginBtn">Login</button>
+
+    <p class="hint">
+      Institution demo:
+      <b>institution@gcu.edu.in / ChangeMe@123</b>
+    </p>
+  </main>
+
+  <!-- ORDER MATTERS -->
+  <script src="../assets/eduforge_config.js"></script>
+  <script src="../assets/eduforge_auth.js"></script>
+
+  <script>
+    const errorBox = document.getElementById("errorBox");
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = "block";
+    }
+
+    function hideError() {
+      errorBox.style.display = "none";
+      errorBox.textContent = "";
+    }
+
+    function getClient() {
+      // Prefer the standard global used across the project
+      return window.EDUFORGE || window.EduForge || null;
+    }
+
+    function extractLoginPayload(res) {
+      // Support both: { ok, token, user } AND { ok, data: { token, user } }
+      const token = res?.token ?? res?.data?.token ?? null;
+      const user = res?.user ?? res?.data?.user ?? null;
+      return { token, user };
+    }
+
+    document.getElementById("loginBtn").onclick = async () => {
+      hideError();
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      if (!email || !password) {
+        showError("Please enter email and password");
+        return;
+      }
+
+      const client = getClient();
+      if (!client || typeof client.apiPost !== "function") {
+        showError(
+          "Frontend config not loaded.\n" +
+          "Make sure you opened via http://localhost:3000/auth/login.html\n" +
+          "and that eduforge_config.js + eduforge_auth.js are loading."
+        );
+        return;
+      }
+
+      try {
+        const res = await client.apiPost("/auth/login", { email, password });
+
+        if (!res || res.ok !== true) {
+          showError(res?.error || "Login failed");
+          return;
+        }
+
+        const { token, user } = extractLoginPayload(res);
+
+        if (!token || !user) {
+          showError("Login response missing token/user. Check backend response shape.");
+          return;
+        }
+
+        // store token (single source of truth)
+        if (typeof client.setToken === "function") {
+          client.setToken(token);
+        } else {
+          // fallback if setToken isn't present
+          localStorage.setItem("token", token);
+        }
+
+        // redirect by role
+        if (user.role === "INSTITUTION_ADMIN") {
+          window.location.href = "../portals/institution/dashboard_institution.html";
+          return;
+        }
+
+        showError("Unsupported role: " + user.role);
+      } catch (e) {
+        console.error(e);
+        showError(
+          "Request failed.\n" +
+          "1) Confirm backend is running: http://localhost:4000\n" +
+          "2) Open login via: http://localhost:3000/auth/login.html (NOT file://)\n\n" +
+          "Error: " + (e?.message || String(e))
+        );
+      }
+    };
+  </script>
+</body>
+</html>

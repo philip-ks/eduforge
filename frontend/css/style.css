@@ -1,0 +1,461 @@
+:root {
+  --bg: #0b0f17;
+  --panel: #0f1623;
+  --text: #e6edf7;
+  --muted: #a9b4c4;
+  --border: rgba(255, 255, 255, 0.08);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+
+  --primary: #4f7cff;
+  --primary-hover: #3a66e8;
+}
+
+/* =========================
+   Base
+   ========================= */
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  background:
+    radial-gradient(1000px 600px at 20% 0%, rgba(79,124,255,0.25), transparent 60%),
+    radial-gradient(900px 500px at 100% 20%, rgba(79,124,255,0.18), transparent 50%),
+    var(--bg);
+  color: var(--text);
+}
+
+/* =========================
+   Topbar / Header
+   ========================= */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(11, 15, 23, 0.85);
+  backdrop-filter: blur(10px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 260px;
+}
+
+.logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(79,124,255,1), rgba(79,124,255,0.35));
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.brand-tagline {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* =========================
+   Navigation
+   ========================= */
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nav-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--text);
+  border-color: var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.auth {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* =========================
+   Layout Containers
+   ========================= */
+
+.container {
+  width: min(1100px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 34px 0 60px;
+}
+
+/* =========================
+   Hero Section
+   ========================= */
+
+.hero {
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(15, 22, 35, 0.65);
+  box-shadow: var(--shadow);
+}
+
+.hero-title {
+  margin: 0 0 10px;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+}
+
+.hero-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 760px;
+}
+
+.hero-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* =========================
+   Cards (Public Site)
+   ========================= */
+
+.grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.card {
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(15, 22, 35, 0.55);
+}
+
+.card-title {
+  font-weight: 800;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.card-text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* =========================
+   Buttons
+   ========================= */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.btn-primary {
+  background: var(--primary);
+  border-color: rgba(79,124,255,0.55);
+  color: #0b0f17;
+  font-weight: 800;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* =========================
+   Forms
+   ========================= */
+
+.form {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.input {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  outline: none;
+}
+
+.input:focus {
+  border-color: rgba(79,124,255,0.55);
+  box-shadow: 0 0 0 3px rgba(79,124,255,0.18);
+}
+
+/* =========================
+   Signup Tabs
+   ========================= */
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.tab-btn.active {
+  background: rgba(79,124,255,0.25);
+  border-color: rgba(79,124,255,0.55);
+  font-weight: 800;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* =========================
+   Notes / Info Boxes
+   ========================= */
+
+.note {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* =========================
+   Post-login App Layout
+   ========================= */
+
+.app {
+  width: min(1200px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 18px 0 40px;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 14px;
+}
+
+/* Sidebar */
+
+.sidebar {
+  position: sticky;
+  top: 76px;
+  align-self: start;
+  height: calc(100vh - 110px);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(15, 22, 35, 0.65);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.sidebar-subtitle {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.sidebar-nav {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.side-link {
+  text-decoration: none;
+  color: var(--text);
+  font-size: 13px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.02);
+}
+.side-link.active {
+  border-color: rgba(79,124,255,0.55);
+  background: rgba(79,124,255,0.18);
+  font-weight: 800;
+}
+
+.side-link:hover {
+  border-color: var(--border);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Sidebar bottom (Profile / Settings) */
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+}
+
+.side-mini {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 13px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.side-mini:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Main Panel */
+
+.mainpanel {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(15, 22, 35, 0.65);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+.panel-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.panel-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =========================
+   Footer
+   ========================= */
+
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 18px 22px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* =========================
+   Responsive
+   ========================= */
+
+@media (max-width: 980px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .brand-tagline { display: none; }
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: relative; top: 0; height: auto; }
+}
+
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr; }
+  .hero-title { font-size: 28px; }
+  .nav { display: none; }
+}
+
+.side-mini.active {
+  border-color: rgba(79,124,255,0.55);
+  background: rgba(79,124,255,0.18);
+  font-weight: 700;
+}
