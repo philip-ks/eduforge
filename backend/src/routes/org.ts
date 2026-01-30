@@ -12,43 +12,40 @@ const router = Router();
 // ---------- Departments ----------
 router.get("/departments", async (_req, res) => {
   const rows = await prisma.department.findMany({ orderBy: { id: "asc" } });
-  res.json(rows);
+  res.json({ ok: true, data: rows });
 });
 
 router.post("/departments", async (req, res) => {
   const name = String(req.body?.name ?? "").trim();
-  if (!name) return res.status(400).json({ error: "name is required" });
+  if (!name) return res.status(400).json({ ok: false, error: "name is required" });
 
-  // If name is unique in schema, create will enforce; otherwise we do a soft de‑dupe.
   const existing = await prisma.department.findFirst({ where: { name } });
   if (existing)
-    return res
-      .status(409)
-      .json({ error: "Department already exists", department: existing });
+    return res.status(409).json({ ok: false, error: "Department already exists", department: existing });
 
   const created = await prisma.department.create({ data: { name } });
-  res.status(201).json(created);
+  res.status(201).json({ ok: true, data: created });
 });
 
 router.put("/departments/:id", async (req, res) => {
   const id = Number(req.params.id);
   const name = String(req.body?.name ?? "").trim();
-  if (!Number.isFinite(id)) return res.status(400).json({ error: "invalid id" });
-  if (!name) return res.status(400).json({ error: "name is required" });
+  if (!Number.isFinite(id)) return res.status(400).json({ ok: false, error: "invalid id" });
+  if (!name) return res.status(400).json({ ok: false, error: "name is required" });
 
   const updated = await prisma.department.update({
-    where: { id },
-    data: { name },
+  where: { id },
+  data: { name },
   });
-  res.json(updated);
+  res.json({ ok: true, data: updated });
 });
 
 router.delete("/departments/:id", async (req, res) => {
   const id = Number(req.params.id);
-  if (!Number.isFinite(id)) return res.status(400).json({ error: "invalid id" });
+  if (!Number.isFinite(id)) return res.status(400).json({ ok: false, error: "invalid id" });
 
   await prisma.department.delete({ where: { id } });
-  res.status(204).send();
+  res.status(204).json({ ok: true });
 });
 
 // ---------- Designations ----------
@@ -56,7 +53,7 @@ router.get("/designations", async (_req, res) => {
   const rows = await prisma.designation.findMany({
     orderBy: { id: "asc" },
   });
-  res.json(rows);
+  res.json({ ok: true, data: rows });
 });
 
 // POST a new designation. Requires a title and a departmentId.
@@ -69,24 +66,22 @@ router.post("/designations", async (req, res) => {
       ? req.body.departmentId.trim()
       : "";
 
-  if (!title) return res.status(400).json({ error: "title is required" });
+  if (!title) return res.status(400).json({ ok: false, error: "title is required" });
   if (!departmentId)
-    return res.status(400).json({ error: "departmentId is required" });
+    return res.status(400).json({ ok: false, error: "departmentId is required" });
 
   // Ensure the department exists
   const dept = await prisma.department.findUnique({
     where: { id: departmentId },
   });
-  if (!dept) return res.status(404).json({ error: "Department not found" });
+  if (!dept) return res.status(404).json({ ok: false, error: "Department not found" });
 
   // Prevent duplicate title within the same department
   const existing = await prisma.designation.findFirst({
     where: { title, departmentId },
   });
   if (existing)
-    return res
-      .status(409)
-      .json({ error: "Designation already exists", designation: existing });
+    return res.status(409).json({ ok: false, error: "Designation already exists", designation: existing });
 
   const created = await prisma.designation.create({
     data: {
@@ -94,13 +89,13 @@ router.post("/designations", async (req, res) => {
       department: { connect: { id: departmentId } },
     },
   });
-  return res.status(201).json(created);
+  return res.status(201).json({ ok: true, data: created });
 });
 
 // PUT update designation. Allows updating title and/or departmentId.
 router.put("/designations/:id", async (req, res) => {
   const id = String(req.params.id);
-  if (!id) return res.status(400).json({ error: "invalid id" });
+  if (!id) return res.status(400).json({ ok: false, error: "invalid id" });
 
   const rawTitle = req.body?.title ?? req.body?.name;
   const title =
@@ -120,29 +115,29 @@ router.put("/designations/:id", async (req, res) => {
   if (!data.title && !data.department)
     return res
       .status(400)
-      .json({ error: "No fields to update" });
+      .json({ ok: false, error: "No fields to update" });
 
   // If departmentId provided, ensure it exists
   if (data.department) {
     const deptExists = await prisma.department.findUnique({
       where: { id: departmentId! },
     });
-    if (!deptExists) return res.status(404).json({ error: "Department not found" });
+    if (!deptExists) return res.status(404).json({ ok: false, error: "Department not found" });
   }
 
   const updated = await prisma.designation.update({
     where: { id },
     data,
   });
-  return res.json(updated);
+  return res.json({ ok: true, data: updated });
 });
 
 router.delete("/designations/:id", async (req, res) => {
   const id = Number(req.params.id);
-  if (!Number.isFinite(id)) return res.status(400).json({ error: "invalid id" });
+  if (!Number.isFinite(id)) return res.status(400).json({ ok: false, error: "invalid id" });
 
   await prisma.designation.delete({ where: { id } });
-  res.status(204).send();
+  res.status(204).json({ ok: true });
 });
 
 // ---------- Subjects ----------
@@ -150,7 +145,7 @@ router.get("/subjects", async (_req, res) => {
   const rows = await prisma.subject.findMany({
     orderBy: { id: "asc" },
   });
-  res.json(rows);
+  res.json({ ok: true, data: rows });
 });
 
 // POST a new subject. Requires name and departmentId.
@@ -161,14 +156,14 @@ router.post("/subjects", async (req, res) => {
       ? req.body.departmentId.trim()
       : "";
 
-  if (!name) return res.status(400).json({ error: "name is required" });
+  if (!name) return res.status(400).json({ ok: false, error: "name is required" });
   if (!departmentId)
-    return res.status(400).json({ error: "departmentId is required" });
+    return res.status(400).json({ ok: false, error: "departmentId is required" });
 
   const dept = await prisma.department.findUnique({
     where: { id: departmentId },
   });
-  if (!dept) return res.status(404).json({ error: "Department not found" });
+  if (!dept) return res.status(404).json({ ok: false, error: "Department not found" });
 
   const existing = await prisma.subject.findFirst({
     where: { name, departmentId },
@@ -176,7 +171,7 @@ router.post("/subjects", async (req, res) => {
   if (existing)
     return res
       .status(409)
-      .json({ error: "Subject already exists", subject: existing });
+      .json({ ok: false, error: "Subject already exists", subject: existing });
 
   const created = await prisma.subject.create({
     data: {
@@ -184,13 +179,13 @@ router.post("/subjects", async (req, res) => {
       department: { connect: { id: departmentId } },
     },
   });
-  return res.status(201).json(created);
+  return res.status(201).json({ ok: true, data: created });
 });
 
 // PUT update subject. Allows updating name and/or departmentId.
 router.put("/subjects/:id", async (req, res) => {
   const id = String(req.params.id);
-  if (!id) return res.status(400).json({ error: "invalid id" });
+  if (!id) return res.status(400).json({ ok: false, error: "invalid id" });
 
   const rawName = req.body?.name;
   const name =
@@ -210,28 +205,28 @@ router.put("/subjects/:id", async (req, res) => {
   if (!data.name && !data.department)
     return res
       .status(400)
-      .json({ error: "No fields to update" });
+      .json({ ok: false, error: "No fields to update" });
 
   if (data.department) {
     const deptExists = await prisma.department.findUnique({
       where: { id: departmentId! },
     });
-    if (!deptExists) return res.status(404).json({ error: "Department not found" });
+    if (!deptExists) return res.status(404).json({ ok: false, error: "Department not found" });
   }
 
   const updated = await prisma.subject.update({
     where: { id },
     data,
   });
-  return res.json(updated);
+  return res.json({ ok: true, data: updated });
 });
 
 router.delete("/subjects/:id", async (req, res) => {
   const id = Number(req.params.id);
-  if (!Number.isFinite(id)) return res.status(400).json({ error: "invalid id" });
+  if (!Number.isFinite(id)) return res.status(400).json({ ok: false, error: "invalid id" });
 
   await prisma.subject.delete({ where: { id } });
-  res.status(204).send();
+  res.status(204).json({ ok: true });
 });
 
 export default router;
