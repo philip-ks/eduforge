@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -204,7 +204,7 @@
     }
 
     function escapeHtml(s) {
-      return s.replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[c]));
+      return s.replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[c]));
     }
 
     // ---- data loading ----
@@ -308,20 +308,25 @@
         const isEdit = state.editing?.mode === "edit";
         const id = state.editing?.id;
 
-        // Map payload field names
+        // Build payload based on tab; include departmentId when required
         const payload = {};
-        if (tab === "designations") payload.title = raw;
-        else payload.name = raw;
+        if (tab === "designations") {
+          payload.title = raw;
+          payload.name = raw; // fallback for backward compatibility
+          payload.departmentId = depId;
+        } else if (tab === "subjects") {
+          payload.name = raw;
+          payload.departmentId = depId;
+        } else {
+          // departments
+          payload.name = raw;
+        }
 
-        // Backend routes currently accept only {name} for departments/subjects and {name} for designations in our route file.
-        // However your actual Designation model uses title. We'll send BOTH to be safe; backend can ignore extra.
-        if (tab === "designations") payload.name = raw;
-
-        // For required relations, backend routes currently do not accept departmentId.
-        // We'll implement department-aware create/update later; for now, we keep it UI-only.
-        // But since your DB requires department, the POST/PUT will fail unless backend supports it.
-        // So we block save for now until backend supports departmentId fields.
-        if (needsDepartment(tab) && !depId) { alert("Department is required."); return; }
+        // Ensure department is selected for tabs that require it
+        if (needsDepartment(tab) && !depId) {
+          alert("Department is required.");
+          return;
+        }
 
         // Call API
         if (!isEdit) {
