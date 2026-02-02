@@ -30,10 +30,9 @@ router.post("/departments", async (req, res) => {
 });
 
 router.put("/departments/:id", async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id)) {
-    return fail(res, 400, "invalid id");
-  }
+  const id = String(req.params.id).trim();
+  if (!id) return fail(res, 400, "invalid id");
+
   const name = requireField(res, req.body, "name");
   if (!name) return;
 
@@ -45,10 +44,9 @@ router.put("/departments/:id", async (req, res) => {
 });
 
 router.delete("/departments/:id", async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id)) {
-    return fail(res, 400, "invalid id");
-  }
+  const id = String(req.params.id).trim();
+  if (!id) return fail(res, 400, "invalid id");
+
   await prisma.department.delete({ where: { id } });
   return success(res, undefined, 204);
 });
@@ -72,7 +70,7 @@ router.post("/designations", async (req, res) => {
   if (!deptOk) return;
 
   const existing = await prisma.designation.findFirst({
-    where: { title, departmentId },
+  where: { title, departmentId },
   });
   if (existing) {
     return fail(res, 409, "Designation already exists");
@@ -89,15 +87,16 @@ router.post("/designations", async (req, res) => {
 
 // PUT update designation. Allows updating title and/or departmentId.
 router.put("/designations/:id", async (req, res) => {
-  const id = String(req.params.id);
-  if (!id) {
-    return fail(res, 400, "invalid id");
-  }
+  const id = String(req.params.id).trim();
+  if (!id) return fail(res, 400, "invalid id");
 
   const rawTitle = req.body?.title ?? req.body?.name;
-  const titleCandidate = typeof rawTitle === "string" && rawTitle.trim() ? rawTitle.trim() : undefined;
+  const titleCandidate =
+    typeof rawTitle === "string" && rawTitle.trim().length
+      ? rawTitle.trim()
+      : undefined;
   const deptCandidate =
-    typeof req.body?.departmentId === "string" && req.body.departmentId.trim()
+    typeof req.body?.departmentId === "string" && req.body.departmentId.trim().length
       ? req.body.departmentId.trim()
       : undefined;
 
@@ -122,10 +121,9 @@ router.put("/designations/:id", async (req, res) => {
 });
 
 router.delete("/designations/:id", async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id)) {
-    return fail(res, 400, "invalid id");
-  }
+  const id = String(req.params.id).trim();
+  if (!id) return fail(res, 400, "invalid id");
+
   await prisma.designation.delete({ where: { id } });
   return success(res, undefined, 204);
 });
@@ -165,15 +163,16 @@ router.post("/subjects", async (req, res) => {
 
 // PUT update subject. Allows updating name and/or departmentId.
 router.put("/subjects/:id", async (req, res) => {
-  const id = String(req.params.id);
-  if (!id) {
-    return fail(res, 400, "invalid id");
-  }
+  const id = String(req.params.id).trim();
+  if (!id) return fail(res, 400, "invalid id");
 
   const rawName = req.body?.name;
-  const nameCandidate = typeof rawName === "string" && rawName.trim() ? rawName.trim() : undefined;
+  const nameCandidate =
+    typeof rawName === "string" && rawName.trim().length
+      ? rawName.trim()
+      : undefined;
   const deptCandidate =
-    typeof req.body?.departmentId === "string" && req.body.departmentId.trim()
+    typeof req.body?.departmentId === "string" && req.body.departmentId.trim().length
       ? req.body.departmentId.trim()
       : undefined;
 
@@ -198,10 +197,9 @@ router.put("/subjects/:id", async (req, res) => {
 });
 
 router.delete("/subjects/:id", async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id)) {
-    return fail(res, 400, "invalid id");
-  }
+  const id = String(req.params.id).trim();
+  if (!id) return fail(res, 400, "invalid id");
+
   await prisma.subject.delete({ where: { id } });
   return success(res, undefined, 204);
 });
