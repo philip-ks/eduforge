@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { prisma } from "../utils/prisma";
+import { prisma } from "../lib/prisma";
 import { requireAuth, AuthedRequest } from "../middleware/auth";
 import { RequestStatus } from "@prisma/client";
+import { success, fail } from "../utils/helpers";
 
 export const institutionRouter = Router();
 
@@ -9,12 +10,12 @@ export const institutionRouter = Router();
  * Hard-guard inside the route module (no dependency on requireInstitution export/import).
  * Allowed institution roles:
  * - INSTITUTION
- * - INSTITUTION_ADMIN (your current enum)
+ * - INSTITUTION_ADMIN
  */
 function institutionGuard(req: AuthedRequest, res: any, next: any) {
   const role = String(req.user?.role || "").toUpperCase();
   if (!["INSTITUTION", "INSTITUTION_ADMIN"].includes(role)) {
-    return res.status(403).json({ ok: false, error: "Forbidden" });
+    return fail(res, 403, "Forbidden");
   }
   next();
 }
@@ -66,14 +67,11 @@ institutionRouter.get("/overview", async (req: AuthedRequest, res) => {
     requestModel?.count ? requestModel.count({ where: whereReqBase }) : Promise.resolve(0),
   ]);
 
-  return res.json({
-    ok: true,
-    data: {
-      institutionId,
-      students,
-      requestsPending,
-      requestsTotal,
-    },
+  return success(res, {
+    institutionId,
+    students,
+    requestsPending,
+    requestsTotal,
   });
 });
 
@@ -95,7 +93,7 @@ institutionRouter.get("/students", async (req: AuthedRequest, res) => {
     select: { id: true, email: true, role: true, phone: true, createdAt: true },
   });
 
-  return res.json({ ok: true, data: rows });
+  return success(res, rows);
 });
 
 institutionRouter.get("/requests", async (req: AuthedRequest, res) => {
@@ -106,7 +104,7 @@ institutionRouter.get("/requests", async (req: AuthedRequest, res) => {
     parseRequestStatus(req.query.status) ?? RequestStatus.OPEN;
 
   const requestModel = pickRequestModel();
-  if (!requestModel?.findMany) return res.json({ ok: true, data: [] });
+  if (!requestModel?.findMany) return success(res, []);
 
   const where: any = { status: statusParsed };
   if (institutionId) where.institutionId = institutionId;
@@ -117,5 +115,5 @@ institutionRouter.get("/requests", async (req: AuthedRequest, res) => {
     take: 200,
   });
 
-  return res.json({ ok: true, data: rows });
+  return success(res, rows);
 });
